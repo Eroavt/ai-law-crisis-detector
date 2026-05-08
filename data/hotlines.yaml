@@ -1,0 +1,36 @@
+# Crisis hotlines used by safe_response.py.
+#
+# Switzerland-first per the paper's audience; international fallbacks for users
+# whose locale is unknown.
+
+switzerland:
+  - name: "Die Dargebotene Hand"
+    short_number: "143"
+    languages: ["DE", "FR", "IT"]
+    note: "24/7 anonymous emotional support across Switzerland."
+  - name: "Pro Juventute Beratung"
+    short_number: "147"
+    languages: ["DE", "FR", "IT", "RM"]
+    note: "Free, confidential support for children and young people in Switzerland."
+
+international:
+  - name: "988 Suicide & Crisis Lifeline"
+    short_number: "988"
+    locale: "US / CA"
+    languages: ["EN", "ES"]
+  - name: "Samaritans"
+    short_number: "116 123"
+    locale: "UK / IE"
+    languages: ["EN"]
+  - name: "Telefonseelsorge"
+    short_number: "0800 111 0 111"
+    locale: "DE"
+    languages: ["DE"]
+  - name: "EU emergency services"
+    short_number: "112"
+    locale: "EU"
+    languages: ["all official EU languages"]
+  - name: "Befrienders Worldwide directory"
+    url: "https://befrienders.org"
+    locale: "global"
+    languages: ["multiple"]
