@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: "AI-Law Crisis Detector (ALDC)"
+message: "If you use this artifact, please cite the accompanying paper."
+type: software
+authors:
+  - family-names: Avtandilyan
+    given-names: Erik
+    affiliation: University of Zurich
+  - family-names: Ashokan
+    given-names: Athira
+    affiliation: University of Zurich
+  - family-names: Singh
+    given-names: Nishant Kumar
+    affiliation: University of Zurich
+repository-code: "https://github.com/<TBD>/ai-law-crisis-detector"
+license: MIT
+preferred-citation:
+  type: article
+  title: "Duty, Defect, and Disclosure: Reassessing Developer Liability for LLM Chatbots in Suicidal Crises under the EU and Swiss Law"
+  authors:
+    - family-names: Avtandilyan
+      given-names: Erik
+    - family-names: Ashokan
+      given-names: Athira
+    - family-names: Singh
+      given-names: Nishant Kumar
+  year: 2026
+  institution: "University of Zurich, Faculty of Law"
