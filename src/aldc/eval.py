@@ -111,6 +111,9 @@ class DetectorMetrics:
     false_positive_baseline_inflated: int                  # detector predicted >= 2 on a true-0 case
     false_positive_rate_baseline: float
     severity3plus_recall: float                            # detector caught severity>=3 cases as >=3
+    per_language_f1_t0: dict[str, float] = field(default_factory=dict)
+    per_language_f1_t0_ci95: dict[str, tuple[float, float]] = field(default_factory=dict)
+    per_language_n: dict[str, int] = field(default_factory=dict)
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -215,6 +218,26 @@ def _detector_metrics(
     sev3_caught = sum(1 for _, det in sev3_cases if det.cssrs_level >= 3)
     sev3_recall = sev3_caught / len(sev3_cases) if sev3_cases else 0.0
 
+    # Per-language F1 (rater 1). Cross-lingual robustness for the Swiss audience.
+    by_lang: dict[str, list[tuple[int, int]]] = defaultdict(list)
+    for i in paired_ids:
+        if i not in convo_map:
+            continue
+        lang = getattr(convo_map[i], "language", "en")
+        by_lang[lang].append((convo_map[i].ground_truth.cssrs_level, r1[i].cssrs_level))
+    per_lang: dict[str, float] = {}
+    per_lang_ci95: dict[str, tuple[float, float]] = {}
+    per_lang_n: dict[str, int] = {}
+    for lang, pairs in by_lang.items():
+        truths_l, preds_l = zip(*pairs, strict=False)
+        per_lang[lang] = float(
+            f1_score(truths_l, preds_l, average="weighted", zero_division=0)
+        )
+        per_lang_ci95[lang] = _bootstrap_ci(
+            list(truths_l), list(preds_l), average="weighted"
+        )
+        per_lang_n[lang] = len(pairs)
+
     return DetectorMetrics(
         n=len(paired_ids),
         weighted_f1_t0=weighted_f1_t0,
@@ -230,6 +253,9 @@ def _detector_metrics(
         false_positive_baseline_inflated=fp_inflated,
         false_positive_rate_baseline=fp_rate,
         severity3plus_recall=sev3_recall,
+        per_language_f1_t0=per_lang,
+        per_language_f1_t0_ci95=per_lang_ci95,
+        per_language_n=per_lang_n,
     )
 
 
@@ -371,6 +397,17 @@ def write_report_md(metrics: FullMetrics, path: Path) -> None:
     for axis, f1 in sorted(d.per_axis_f1_t0.items()):
         ci = d.per_axis_f1_t0_ci95.get(axis, (0.0, 0.0))
         lines.append(f"| `{axis}` | {f1:.3f} | [{ci[0]:.3f}, {ci[1]:.3f}] |")
+    if len(d.per_language_f1_t0) > 1:
+        lines.append("")
+        lines.append("### Cross-lingual weighted F1 (Swiss national languages + EN)")
+        lines.append("")
+        lines.append("| Language | n | F1 | 95% CI |")
+        lines.append("|---|---|---|---|")
+        for lang in sorted(d.per_language_f1_t0):
+            f1 = d.per_language_f1_t0[lang]
+            ci = d.per_language_f1_t0_ci95.get(lang, (0.0, 0.0))
+            n_l = d.per_language_n.get(lang, 0)
+            lines.append(f"| `{lang}` | {n_l} | {f1:.3f} | [{ci[0]:.3f}, {ci[1]:.3f}] |")
     lines.append("")
     lines.append("### Confusion matrix (rows = ground truth, cols = detector)")
     lines.append("")

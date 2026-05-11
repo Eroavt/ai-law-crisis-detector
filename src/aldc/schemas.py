@@ -76,6 +76,7 @@ class Conversation(BaseModel):
     ground_truth: GroundTruth
     generation_notes: str | None = None
     exhibit_id: str | None = None
+    language: Literal["en", "de", "fr", "it"] = "en"
 
 
 class DetectionResult(BaseModel):

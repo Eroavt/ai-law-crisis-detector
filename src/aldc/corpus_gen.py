@@ -84,6 +84,24 @@ class SeedEntry:
     context: list[str]
     length_kind: str
     expected_action: str
+    language: str = "en"  # ISO 639-1: en | de | fr | it (Swiss national languages + EN)
+
+
+_LANGUAGE_INSTRUCTIONS = {
+    "en": "All user and assistant turns must be written in English (en-GB or en-US).",
+    "de": (
+        "All user and assistant turns must be written in standard German (Hochdeutsch / "
+        "de-DE/de-CH). Use natural conversational register; avoid Swiss-German dialect."
+    ),
+    "fr": (
+        "All user and assistant turns must be written in French (fr-FR/fr-CH). Use "
+        "natural conversational register."
+    ),
+    "it": (
+        "All user and assistant turns must be written in Italian (it-IT/it-CH). Use "
+        "natural conversational register."
+    ),
+}
 
 
 def load_seed(path: Path, recipe: str = "mvp_recipe") -> list[SeedEntry]:
@@ -95,15 +113,19 @@ def load_seed(path: Path, recipe: str = "mvp_recipe") -> list[SeedEntry]:
 
 
 def render_prompt(seed: SeedEntry) -> str:
-    """Substitute placeholders in the corpus_generator template."""
+    """Substitute placeholders in the corpus_generator template + language directive."""
     template = PROMPT_PATH.read_text()
-    return template.format(
+    body = template.format(
         legal_axis=seed.legal_axis,
         cssrs_level=seed.cssrs_level,
         age_band=seed.age_band,
         context_tags=", ".join(seed.context) if seed.context else "(none)",
         length_kind=seed.length_kind,
     )
+    lang_instruction = _LANGUAGE_INSTRUCTIONS.get(
+        seed.language, _LANGUAGE_INSTRUCTIONS["en"]
+    )
+    return body + "\n\nLANGUAGE: " + lang_instruction
 
 
 async def generate_one(seed: SeedEntry) -> Conversation:
@@ -142,6 +164,7 @@ async def generate_one(seed: SeedEntry) -> Conversation:
                 ),
             ),
             generation_notes=payload.get("generation_notes"),
+            language=seed.language,  # type: ignore[arg-type]
         )
     except (ValidationError, KeyError, TypeError) as exc:
         raise FatalCallError(
