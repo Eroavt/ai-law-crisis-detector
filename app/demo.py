@@ -27,10 +27,11 @@ if str(SRC) not in sys.path:
 
 from dotenv import load_dotenv
 
-from aldc import legal_map
+from aldc import legal_map, regulator_view
 from aldc.baselines import read_jsonl as read_baselines
 from aldc.corpus_gen import read_jsonl as read_corpus
 from aldc.detector import detect_one
+from aldc.runtime import current_backend
 from aldc.safe_response import respond
 from aldc.schemas import Conversation, DetectionResult, GroundTruth, ProviderResponse, Turn
 
@@ -243,62 +244,122 @@ _render_turns(selected_convo)
 
 st.divider()
 
-col_gt, col_naive, col_policy, col_wrapped, col_detector, col_legal = st.columns(
-    [1.2, 1.4, 1.4, 1.4, 1.4, 1.4]
-)
-
 precomputed = _baselines_for(selected_convo.id, baselines)
+last_detection_key = f"last_detection_{selected_convo.id}"
 
-with col_gt:
-    st.subheader("Ground truth")
-    _ground_truth_panel(selected_convo)
-    _safe_response_preview(selected_convo.ground_truth.expected_action)
+tab_main, tab_regulator = st.tabs(["Side-by-side comparison", "Regulator Mode (AI Act audit)"])
 
-with col_naive:
-    st.subheader("Naive")
-    st.caption('"You are a helpful assistant." — no guardrails.')
-    _baseline_panel("naive_baseline", precomputed.get("naive_baseline"))
-
-with col_policy:
-    st.subheader("Policy-only")
-    st.caption("OpenAI / Anthropic / Character.AI policy as system prompt.")
-    arm = st.radio(
-        "Provider policy",
-        ["policy_baseline_openai", "policy_baseline_anthropic", "policy_baseline_character_ai"],
-        label_visibility="collapsed",
-        horizontal=True,
-        key=f"policy_radio_{selected_convo.id}",
+with tab_main:
+    col_gt, col_naive, col_policy, col_wrapped, col_detector, col_legal = st.columns(
+        [1.2, 1.4, 1.4, 1.4, 1.4, 1.4]
     )
-    _baseline_panel(arm, precomputed.get(arm))
 
-with col_wrapped:
-    st.subheader("Detector-wrapped")
-    st.caption("Detector → if severity ≥ 3, replace reply with templated safe response.")
-    _baseline_panel("detector_wrapped", precomputed.get("detector_wrapped"))
+    with col_gt:
+        st.subheader("Ground truth")
+        _ground_truth_panel(selected_convo)
+        _safe_response_preview(selected_convo.ground_truth.expected_action)
 
-with col_detector:
-    st.subheader("Live detector")
-    if st.button("Run detector now", type="primary", key=f"run_{selected_convo.id}"):
-        try:
-            with st.spinner("Calling Opus 4.7…"):
-                result = _run_detector_sync(selected_convo)
-            _detector_panel(result)
-            st.session_state[f"last_detection_{selected_convo.id}"] = result
-        except Exception as exc:  # noqa: BLE001
-            st.error(str(exc))
-    else:
-        cached = st.session_state.get(f"last_detection_{selected_convo.id}")
-        if cached:
-            _detector_panel(cached)
+    with col_naive:
+        st.subheader("Naive")
+        st.caption('"You are a helpful assistant." — no guardrails.')
+        _baseline_panel("naive_baseline", precomputed.get("naive_baseline"))
+
+    with col_policy:
+        st.subheader("Policy-only")
+        st.caption("OpenAI / Anthropic / Character.AI policy as system prompt.")
+        arm = st.radio(
+            "Provider policy",
+            ["policy_baseline_openai", "policy_baseline_anthropic", "policy_baseline_character_ai"],
+            label_visibility="collapsed",
+            horizontal=True,
+            key=f"policy_radio_{selected_convo.id}",
+        )
+        _baseline_panel(arm, precomputed.get(arm))
+
+    with col_wrapped:
+        st.subheader("Detector-wrapped")
+        st.caption("Detector → if severity ≥ 3, replace reply with templated safe response.")
+        _baseline_panel("detector_wrapped", precomputed.get("detector_wrapped"))
+
+    with col_detector:
+        st.subheader("Live detector")
+        if st.button("Run detector now", type="primary", key=f"run_{selected_convo.id}"):
+            try:
+                with st.spinner("Calling Opus 4.7…"):
+                    result = _run_detector_sync(selected_convo)
+                _detector_panel(result)
+                st.session_state[last_detection_key] = result
+            except Exception as exc:  # noqa: BLE001
+                st.error(str(exc))
         else:
-            st.info("Click *Run detector now* to classify this conversation.")
+            cached = st.session_state.get(last_detection_key)
+            if cached:
+                _detector_panel(cached)
+            else:
+                st.info("Click *Run detector now* to classify this conversation.")
 
-with col_legal:
-    st.subheader("Legal mapping")
-    _legal_panel(selected_convo.ground_truth.legal_axis_tag)
+    with col_legal:
+        st.subheader("Legal mapping")
+        _legal_panel(selected_convo.ground_truth.legal_axis_tag)
+
+with tab_regulator:
+    st.markdown(
+        "**Regulator Mode** treats the artifact as an AI Act conformity auditor. "
+        "Pick a provider arm and the detector classifies their response against the "
+        "AI Act / GDPR / PLD checklist. Failed critical checks are the breach signals."
+    )
+    arm_choice = st.selectbox(
+        "Arm to audit",
+        [
+            "naive_baseline",
+            "policy_baseline_openai",
+            "policy_baseline_anthropic",
+            "policy_baseline_character_ai",
+            "detector_wrapped",
+        ],
+        key=f"reg_arm_{selected_convo.id}",
+    )
+    response_for_audit = precomputed.get(arm_choice)
+    detection_for_audit = st.session_state.get(last_detection_key)
+
+    if detection_for_audit is None:
+        st.info(
+            "Run the live detector in the main tab first, OR load precomputed "
+            "detections via `scripts/02_run_detection.py`. Without a detection, "
+            "some checks (Performable Duty, proportionality, Art. 12 logging) "
+            "cannot be evaluated."
+        )
+
+    report = regulator_view.audit(
+        selected_convo,
+        detection=detection_for_audit,
+        response=response_for_audit,
+        arm=arm_choice,
+    )
+
+    status_col1, status_col2 = st.columns([1, 2])
+    with status_col1:
+        if report.overall_passed:
+            st.success(f"✅ PASS — {arm_choice}")
+        else:
+            st.error(
+                f"❌ {report.n_failed} check(s) FAILED — {arm_choice}"
+            )
+            if report.failed_critical:
+                st.error(
+                    "Critical: " + ", ".join(report.failed_critical)
+                )
+    with status_col2:
+        st.caption(
+            f"Conversation `{selected_convo.id}` • "
+            f"GT severity `{selected_convo.ground_truth.cssrs_level}` • "
+            f"axis `{selected_convo.ground_truth.legal_axis_tag}`"
+        )
+
+    st.markdown(regulator_view.render_markdown(report))
 
 st.divider()
 st.caption(
-    "© 2026 Erik Avtandilyan, Athira Ashokan, Nishant Kumar Singh • "
-    "MIT-licensed research artifact • UZH Faculty of Law, FS26"
+    f"Backend: `{current_backend()}` • © 2026 Erik Avtandilyan, Athira Ashokan, "
+    "Nishant Kumar Singh • MIT-licensed research artifact • UZH Faculty of Law, FS26"
 )

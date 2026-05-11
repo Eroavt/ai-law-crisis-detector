@@ -1,4 +1,4 @@
-"""Evaluation: F1, Cohen's κ, baseline failure rates, false-positive rates.
+"""Evaluation: F1, Cohen's κ, baseline failure rates, false-positive rates, bootstrap CIs.
 
 Outputs ``results/metrics.json`` (machine-readable, paper Exhibit H) and
 ``results/report.md`` (human-readable, drops verbatim into paper Document B).
@@ -7,6 +7,7 @@ Outputs ``results/metrics.json`` (machine-readable, paper Exhibit H) and
 from __future__ import annotations
 
 import json
+import random
 import re
 from collections import defaultdict
 from collections.abc import Iterable
@@ -18,6 +19,36 @@ from sklearn.metrics import (
     confusion_matrix,
     f1_score,
 )
+
+BOOTSTRAP_N = 1000
+BOOTSTRAP_SEED = 20260508
+
+
+def _bootstrap_ci(
+    truths: list[int],
+    preds: list[int],
+    *,
+    n_iter: int = BOOTSTRAP_N,
+    seed: int = BOOTSTRAP_SEED,
+    average: str = "weighted",
+) -> tuple[float, float]:
+    """Return (lower95, upper95) for the weighted F1 over a paired sample."""
+    if not truths:
+        return (0.0, 0.0)
+    rng = random.Random(seed)
+    n = len(truths)
+    scores = []
+    for _ in range(n_iter):
+        idx = [rng.randrange(n) for _ in range(n)]
+        t = [truths[i] for i in idx]
+        p = [preds[i] for i in idx]
+        scores.append(
+            float(f1_score(t, p, average=average, zero_division=0))
+        )
+    scores.sort()
+    lo = scores[int(0.025 * n_iter)]
+    hi = scores[int(0.975 * n_iter)]
+    return (round(lo, 4), round(hi, 4))
 
 from aldc.cost import summarise as summarise_cost
 from aldc.schemas import (
@@ -68,8 +99,10 @@ class ArmFailureStats:
 class DetectorMetrics:
     n: int                                                # convos rated by both raters
     weighted_f1_t0: float
+    weighted_f1_t0_ci95: tuple[float, float]              # bootstrap 95% CI for weighted F1
     weighted_f1_t03: float
     per_axis_f1_t0: dict[str, float]
+    per_axis_f1_t0_ci95: dict[str, tuple[float, float]]   # bootstrap 95% CI per legal axis
     per_severity_f1_t0: dict[str, float]
     cohen_kappa_t0_t03: float                              # rater agreement on cssrs_level
     confusion_matrix_t0: list[list[int]]                   # rows = ground truth, cols = predicted
@@ -132,6 +165,7 @@ def _detector_metrics(
     weighted_f1_t03 = float(
         f1_score(truth, pred_t03, average="weighted", zero_division=0)
     )
+    weighted_f1_t0_ci95 = _bootstrap_ci(truth, pred_t0, average="weighted")
 
     severity_labels = sorted({*truth, *pred_t0})
     cm = confusion_matrix(truth, pred_t0, labels=severity_labels).tolist()
@@ -145,10 +179,14 @@ def _detector_metrics(
         axis = convo_map[i].ground_truth.legal_axis_tag
         by_axis[axis].append((convo_map[i].ground_truth.cssrs_level, r1[i].cssrs_level))
     per_axis: dict[str, float] = {}
+    per_axis_ci95: dict[str, tuple[float, float]] = {}
     for axis, pairs in by_axis.items():
         truths, preds = zip(*pairs, strict=False)
         per_axis[axis] = float(
             f1_score(truths, preds, average="weighted", zero_division=0)
+        )
+        per_axis_ci95[axis] = _bootstrap_ci(
+            list(truths), list(preds), average="weighted"
         )
 
     # Per-severity F1 (rater 1)
@@ -180,8 +218,10 @@ def _detector_metrics(
     return DetectorMetrics(
         n=len(paired_ids),
         weighted_f1_t0=weighted_f1_t0,
+        weighted_f1_t0_ci95=weighted_f1_t0_ci95,
         weighted_f1_t03=weighted_f1_t03,
         per_axis_f1_t0=per_axis,
+        per_axis_f1_t0_ci95=per_axis_ci95,
         per_severity_f1_t0=per_sev,
         cohen_kappa_t0_t03=kappa,
         confusion_matrix_t0=cm,
@@ -312,7 +352,10 @@ def write_report_md(metrics: FullMetrics, path: Path) -> None:
     lines.append("")
     lines.append("## Detector performance (Rater 1, T = 0.0)")
     lines.append("")
-    lines.append(f"- Weighted F1 across C-SSRS levels: **{d.weighted_f1_t0:.3f}**")
+    lines.append(
+        f"- Weighted F1 across C-SSRS levels: **{d.weighted_f1_t0:.3f}** "
+        f"(95% CI [{d.weighted_f1_t0_ci95[0]:.3f}, {d.weighted_f1_t0_ci95[1]:.3f}])"
+    )
     lines.append(f"- Severity-≥3 recall: **{d.severity3plus_recall:.3f}**")
     lines.append(f"- Cohen's κ between raters (T=0.0 vs T=0.3): **{d.cohen_kappa_t0_t03:.3f}**")
     lines.append(
@@ -321,12 +364,13 @@ def write_report_md(metrics: FullMetrics, path: Path) -> None:
         f"({d.false_positive_baseline_inflated}/{d.false_positive_baseline_n})"
     )
     lines.append("")
-    lines.append("### Per-axis weighted F1")
+    lines.append("### Per-axis weighted F1 with 95% bootstrap CI")
     lines.append("")
-    lines.append("| Legal axis | F1 |")
-    lines.append("|---|---|")
+    lines.append("| Legal axis | F1 | 95% CI |")
+    lines.append("|---|---|---|")
     for axis, f1 in sorted(d.per_axis_f1_t0.items()):
-        lines.append(f"| `{axis}` | {f1:.3f} |")
+        ci = d.per_axis_f1_t0_ci95.get(axis, (0.0, 0.0))
+        lines.append(f"| `{axis}` | {f1:.3f} | [{ci[0]:.3f}, {ci[1]:.3f}] |")
     lines.append("")
     lines.append("### Confusion matrix (rows = ground truth, cols = detector)")
     lines.append("")
