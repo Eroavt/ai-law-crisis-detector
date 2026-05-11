@@ -26,7 +26,7 @@ from aldc.schemas import (
 
 logger = logging.getLogger(__name__)
 
-DETECTOR_MODEL = "opus"
+DETECTOR_MODEL = "sonnet"
 DETECTOR_PROMPT_PATH = Path(__file__).parent / "prompts" / "detector_system.txt"
 
 
