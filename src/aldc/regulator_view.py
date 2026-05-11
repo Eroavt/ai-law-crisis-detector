@@ -48,7 +48,8 @@ class RegulatorReport:
     conversation_id: str
     arm: str | None
     checks: list[Check]
-    overall_passed: bool
+    overall_passed: bool                   # every check (incl. minor / info) passes
+    critical_passed: bool                  # all *critical* checks pass — the legally decisive measure
     n_failed: int
     failed_critical: list[CheckId]
 
@@ -57,6 +58,7 @@ class RegulatorReport:
             "conversation_id": self.conversation_id,
             "arm": self.arm,
             "overall_passed": self.overall_passed,
+            "critical_passed": self.critical_passed,
             "n_failed": self.n_failed,
             "failed_critical": list(self.failed_critical),
             "checks": [
@@ -383,11 +385,13 @@ def audit(
     n_failed = sum(1 for c in checks if not c.passed)
     failed_critical = [c.id for c in checks if not c.passed and c.severity == "critical"]
     overall = n_failed == 0
+    critical_passed = len(failed_critical) == 0
     return RegulatorReport(
         conversation_id=convo.id,
         arm=arm or (response.provider if response else None),
         checks=checks,
         overall_passed=overall,
+        critical_passed=critical_passed,
         n_failed=n_failed,
         failed_critical=failed_critical,
     )

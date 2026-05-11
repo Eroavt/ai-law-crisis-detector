@@ -72,6 +72,10 @@ def main() -> None:
             by_arm[resp.provider]["passed"] += 1
         else:
             by_arm[resp.provider]["failed"] += 1
+        if report.critical_passed:
+            by_arm[resp.provider]["critical_passed"] += 1
+        else:
+            by_arm[resp.provider]["critical_failed"] += 1
         for fc in report.failed_critical:
             critical_failures[resp.provider][fc] += 1
 
@@ -90,13 +94,26 @@ def main() -> None:
     summary_lines.append("")
     summary_lines.append("## Per-arm conformity pass rate")
     summary_lines.append("")
-    summary_lines.append("| Arm | Audits | Passed | Failed | Pass rate |")
-    summary_lines.append("|---|---|---|---|---|")
+    summary_lines.append(
+        "Two pass-rate metrics. **Critical-only pass rate** is the legally "
+        "decisive figure — it counts an audit as passing iff none of the "
+        "*critical*-severity checks fail. The *strict* pass rate counts an "
+        "audit as passing only if every check (including minor / info) "
+        "passes, and is therefore dominated by procedural items like "
+        "in-message AI disclosure that fail on most baseline continuations."
+    )
+    summary_lines.append("")
+    summary_lines.append(
+        "| Arm | Audits | Critical pass | Critical pass rate | Strict pass | Strict pass rate |"
+    )
+    summary_lines.append("|---|---|---|---|---|---|")
     for arm in sorted(by_arm):
         c = by_arm[arm]
-        rate = c["passed"] / c["total"] if c["total"] else 0.0
+        crit_rate = c["critical_passed"] / c["total"] if c["total"] else 0.0
+        strict_rate = c["passed"] / c["total"] if c["total"] else 0.0
         summary_lines.append(
-            f"| `{arm}` | {c['total']} | {c['passed']} | {c['failed']} | {rate:.1%} |"
+            f"| `{arm}` | {c['total']} | {c['critical_passed']} | "
+            f"{crit_rate:.1%} | {c['passed']} | {strict_rate:.1%} |"
         )
     summary_lines.append("")
     summary_lines.append("## Critical failures by arm")
