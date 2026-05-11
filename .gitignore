@@ -32,3 +32,6 @@ Thumbs.db
 
 # Streamlit cache
 .streamlit/cache/
+
+# Claude Code internal
+.claude/
