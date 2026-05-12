@@ -70,17 +70,22 @@ def _baselines_for(
 
 
 def _run_detector_sync(convo: Conversation) -> DetectionResult:
-    """Wrap the async detect_one call so the Streamlit UI can call it inline."""
-    from anthropic import AsyncAnthropic
+    """Wrap the async detect_one call so the Streamlit UI can call it inline.
 
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    The detector now routes through ``aldc.runtime``, which picks between the
+    Max-routed ``claude_code`` backend (default) and the paid ``api`` backend
+    via the ``ALDC_BACKEND`` env var. No client object needs to be passed.
+    """
+    backend = current_backend()
+    if backend == "api" and not os.environ.get("ANTHROPIC_API_KEY"):
         raise RuntimeError(
-            "ANTHROPIC_API_KEY not set. Put it in .env at the repo root."
+            "ALDC_BACKEND=api but ANTHROPIC_API_KEY is unset. "
+            "Either set the key in .env at the repo root, or switch to "
+            "ALDC_BACKEND=claude_code (Max subscription)."
         )
 
     async def _go() -> DetectionResult:
-        client = AsyncAnthropic()
-        return await detect_one(client, convo)
+        return await detect_one(convo)
 
     return asyncio.run(_go())
 
