@@ -1,57 +1,136 @@
 # AI-Law Crisis Detector (ALDC)
 
-Research artifact accompanying the paper **"Duty, Defect, and Disclosure: Reassessing Developer Liability for LLM Chatbots in Suicidal Crises under the EU and Swiss Law"** (UZH FS26 *AI: Technology and Law*, Profs. Thouvenin & Bernstein, May 2026).
+Research artifact accompanying the paper **"Duty, Defect, and Disclosure: Reassessing Developer Liability for LLM Chatbots in Suicidal Crises under Swiss and European Law"** (UZH FS26 *AI: Technology and Law*, Profs. Florent Thouvenin and Abraham Bernstein, May 2026).
 
 ## What this is
 
-ALDC is a clinically-grounded, calibrated detection pipeline that classifies a chat conversation against the Columbia Suicide Severity Rating Scale (C-SSRS) and the NIMH Ask Suicide-Screening Questions (ASQ), and emits a structured `DetectionResult` linking the case to a specific Swiss / EU legal article. The artifact is the technical premise of the paper's central legal claim:
+ALDC is a clinically-grounded, calibrated detection pipeline that classifies a chat conversation against the Columbia Suicide Severity Rating Scale (C-SSRS) and the NIMH Ask Suicide-Screening Questions (ASQ). The detector embeds six predictive frameworks (Joiner's IPTS, Klonsky/May's 3ST, Beck cognitive markers, behavioural acquisition signals, AI-chat anthropomorphic-dependence markers, the SAFE-T risk inventory) and emits a structured `DetectionResult` linking each case to a specific Swiss or EU legal article via `src/aldc/legal_map.py`. It is calibrated for suicide-risk *flagging*, not psychiatric diagnosis.
 
-> **The foreseeability gap has closed.** Crisis detection in conversational AI is technically performable with off-the-shelf models at marginal cost. Failure to deploy is no longer a research limitation — it is a foreseeable, defective design choice.
+The artifact is the technical premise of the paper's central legal claim:
+
+> **The foreseeability gap has closed.** Crisis detection in conversational AI is technically performable with off-the-shelf models at marginal cost. Failure to deploy is no longer a research limitation; it is a foreseeable, defective design choice for which developers are liable in damages and, in egregious cases, regulatorily sanctionable.
 
 ## What this is not
 
-Not a clinical tool. Not deployable as-is in production without a proper safety review, locale-appropriate hotlines, and human-on-the-loop oversight. Synthetic data is for *evaluation*, not training.
+Not a clinical tool. Not deployable as-is in production without proper safety review, locale-appropriate hotlines, and human-on-the-loop oversight. Synthetic data is for *evaluation*, not training.
 
-## Architecture
+## Pipeline at a glance
 
 ```
-Conversation ──► Detector (Opus 4.7, two raters at T=0.0 and T=0.3)
+Conversation ──► Detector (Sonnet 4.6, two raters at T = 0.0 and T = 0.3)
                        │
-                       ├─► DetectionResult (C-SSRS, ASQ, markers, dynamics, action, trace)
+                       ├─► DetectionResult: C-SSRS / ASQ / markers / dynamics / action / trace
                        │
                        └─► Cohen's κ between raters
-Conversation ──► 3-arm baselines: naive / policy-only / detector-wrapped
-Conversation ──► Live providers: OpenAI / Google / Anthropic / Character.AI
-                       │
-                       └─► The Industry Scorecard (paper Document B Table 1)
+
+Conversation ──► 5-arm baselines:
+                     • naive_baseline                  (no guardrails)
+                     • policy_baseline_openai          (OpenAI policy as system prompt)
+                     • policy_baseline_anthropic       (Anthropic Constitution excerpt)
+                     • policy_baseline_character_ai    (Character.AI policy)
+                     • detector_wrapped                (detector + templated safe response)
+
+Each conversation × arm  ──►  Regulator-Mode audit
+                              10 AI Act / GDPR / PLD conformity checks
+                              critical-pass / strict-pass rates per arm
 ```
 
 ## Layout
 
-- `src/aldc/schemas.py` — the law/code contract.
-- `src/aldc/legal_map.py` — every legal-axis tag → article + case + doctrinal claim + paper section.
-- `src/aldc/prompts/` — load-bearing system prompts.
-- `src/aldc/detector.py` — Opus-based calibrated rater.
-- `src/aldc/baselines.py` — three-arm contrast.
-- `src/aldc/live_providers.py` — multi-provider scorecard generator.
-- `src/aldc/safe_response.py` — graduated safe-response module with Swiss + intl. hotlines.
-- `app/demo.py` — Streamlit demo, the workshop-presentation hinge.
-- `data/corpus.jsonl` — paper Exhibit A (35-dialogue MVP, expanding to 150).
-- `results/` — paper Exhibits B–H.
-- `docs/` — ETHICS, REPRODUCE, ARTIFACT_TO_PAPER, DATASHEET, MODEL_CARD.
+- `src/aldc/runtime.py` — abstracts over two backends:
+  - **claude_code (default)**: routes through `claude -p` and the user's Claude Max subscription. Free per-call.
+  - **api**: routes through the official Anthropic API for paper-reproducibility runs.
+- `src/aldc/schemas.py` — Pydantic models. `legal_axis_tag` is the bridge between the artifact and the legal argument.
+- `src/aldc/legal_map.py` — every legal-axis tag → article + leading case + doctrinal claim + paper section.
+- `src/aldc/prompts/detector_system.txt` — load-bearing prompt embedding C-SSRS, ASQ, and six predictive frameworks.
+- `src/aldc/corpus_gen.py` — Sonnet-driven stratified corpus generation.
+- `src/aldc/detector.py` — calibrated two-rater detection.
+- `src/aldc/baselines.py` — 5-arm contrast.
+- `src/aldc/safe_response.py` — graduated 4-tier safe-response module with Swiss + international hotlines (143 Dargebotene Hand, 147 Pro Juventute, 144 medical, 112 EU emergency, 988 US Lifeline, Samaritans 116 123, Telefonseelsorge 0800 111 0 111).
+- `src/aldc/regulator_view.py` — AI Act / GDPR / PLD conformity audit.
+- `src/aldc/adversarial.py` — multi-turn guardrail-decay probe with user-simulator.
+- `src/aldc/live_providers.py` — optional live ChatGPT-4o / Gemini-2.5 scorecard arm (requires OpenAI / Google API keys).
+- `src/aldc/eval.py` — F1, Cohen's κ, per-axis / per-severity / per-language F1, bootstrap 95% CIs, per-arm failure rates.
+- `src/aldc/cost.py` — cost ledger feeding the paper's *Wirtschaftliche Zumutbarkeit* (economic-reasonableness) analysis.
+- `app/demo.py` — Streamlit demo with six panels (Ground Truth / Naive / Policy / Detector-Wrapped / Live Detector / Legal Mapping) plus a Regulator Mode tab.
+- `data/corpus.jsonl` — 35-dialogue stratified evaluation corpus (paper Exhibit A).
+- `data/exhibit_curated.jsonl` — four hand-curated worked examples incorporating verbatim publicly-pleaded text from *Gavalas v. Google*, *Garcia v. Character Technologies*, and *Raine v. OpenAI*.
+- `data/corpus_seed.yaml` — generation recipe (MVP English + DE/FR/IT multilingual subset).
+- `data/hotlines.yaml` — locale-specific hotline directory used by `safe_response.py`.
+- `results/` — paper exhibits B–H (detections, baselines, metrics, regulator audits, evaluation report).
+- `docs/` — ETHICS, REPRODUCE, DATASHEET, MODEL_CARD, ARTIFACT_TO_PAPER, COUNTERARGUMENTS, PAPER_OUTLINE.
+- `paper/` — Markdown drafts of all three submission documents plus REVISION_NOTES_FOR_ATHIRA.
+- `scripts/` — numbered CLI entry points (01 corpus, 02 detection, 03 baselines, 04 live providers, 05 adversarial, 08 evaluate, 09 regulator audits, 99 freeze for submission).
+
+## Headline metrics (May 2026 evaluation)
+
+- Cohen's κ between two independent rater passes: **0.820** (substantial+ agreement on Landis & Koch scale; exceeds typical clinical inter-rater reliability for the C-SSRS).
+- Severity-≥3 recall: **0.833** (detector catches five of every six legally-salient cases).
+- False-positive rate on the philosophical-curiosity baseline axis: **0.000** (zero over-flagging on the 'is there meaning?' control).
+- Detector-wrapped arm critical-pass rate under the Regulator-Mode audit: **100%** (35/35 conversations).
+- Policy-only baselines critical-pass: **94.3–97.1%** (1–2 critical violations per arm).
+- Naive baseline critical-pass: **94.3%** (2 critical violations).
+- Per-call API-equivalent cost: **~$0.02 on Sonnet 4.6** [POST-RERUN — current Opus number is $0.18].
+- Projected per-active-user-month cost at 50 conversations/user: **~$1.00 on Sonnet** [POST-RERUN].
 
 ## Setup
 
 ```bash
-uv sync                    # install deps (or: uv sync --extra live for live-provider arm)
-cp .env.example .env       # then put your ANTHROPIC_API_KEY in .env
-uv run pytest              # smoke test
+# Clone
+git clone <repo-url> ~/dev/GitHub/ai-law-crisis-detector
+cd ~/dev/GitHub/ai-law-crisis-detector
+
+# Install
+uv sync
+
+# For Max-routed runs (default): make sure you have Claude Code installed and logged in
+claude --version
+
+# For paid-API runs: copy .env.example to .env and set ANTHROPIC_API_KEY
+cp .env.example .env
+
+# Smoke test
+uv run pytest
 ```
+
+## Run the pipeline
+
+```bash
+# Generate the synthetic corpus
+uv run python scripts/01_generate_corpus.py
+
+# Two-rater detection (κ measurement)
+uv run python scripts/02_run_detection.py
+
+# 5-arm baseline contrast
+uv run python scripts/03_run_baselines.py
+
+# Optional: live multi-provider scorecard (needs OPENAI_API_KEY, GOOGLE_API_KEY)
+# uv run python scripts/04_run_live_providers.py
+
+# Optional: adversarial multi-turn probe
+# uv run python scripts/05_run_adversarial.py --max-turns 20 --runs-per-profile 1
+
+# Evaluate everything
+uv run python scripts/08_evaluate.py
+
+# AI Act / PLD / GDPR conformity audit
+uv run python scripts/09_run_regulator_audits.py
+
+# Demo
+uv run streamlit run app/demo.py
+```
+
+Concurrency is governed by `ALDC_CONCURRENCY` (default 4; lower it to 2 if your Max-plan quota throttles).
 
 ## Reproducibility
 
-See `docs/REPRODUCE.md` for the exact recipe (model versions, dates, costs).
+See `docs/REPRODUCE.md` for the exact recipe (model versions, dates, costs). The artifact is reproducible from source on both backends.
+
+## Cite
+
+See `CITATION.cff`. Paper DOI and Zenodo artifact DOI will be added at submission time.
 
 ## License
 
-MIT. Authors: Erik Avtandilyan, Athira Ashokan, Nishant Kumar Singh.
+MIT. Authors: Athira Ashokan, Erik Avtandilyan, Nishant Kumar Singh. University of Zurich, Faculty of Law, FS26.
