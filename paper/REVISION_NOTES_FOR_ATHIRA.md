@@ -50,16 +50,29 @@ I cannot access paywalled Swiss commentaries. The following commentary citations
 - **Donatsch / Sotorr, ZStrR 142 (2024) — engagement-maximisation-as-selfish-motive article.** — §6.3 footnote 617. I cited this provisionally; if the article doesn't exist or doesn't say what I attribute, please remove the citation and we own the argument as our own novelty.
 - **Müller-Chen / Habluetzel — AI-tort article in Jusletter IT.** — bibliography. Please verify the specific article exists.
 
-## The [POST-RERUN] markers
+## The metric numbers (post-12-May-Sonnet-re-run, resolved)
 
-The May 12 Sonnet 4.6 re-run will tighten several metrics. The drafts have explicit `[POST-RERUN]` markers at the following locations:
+The Sonnet 4.6 re-run with the enriched suicide-risk-focused detector
+prompt completed on 12 May 2026 and the drafts have been updated. The
+final headline numbers used throughout the paper are:
 
-- `document_a.md` §A.3 paragraph naming the F1 / κ / cost figures.
-- `document_c_02_methodology.md` §2.7 paragraph naming the detector model.
-- `document_c_03_duty_of_care.md` §3.4 footnote 321 and footnote 323 (F1 figure and per-call cost).
-- `document_b.md` §B.3 entire table (the metric-heavy results table is the primary update locus).
+- Weighted F1 across C-SSRS levels (T = 0.0): **0.616** (95% bootstrap CI [0.452, 0.790])
+- Cohen's κ between the two rater passes: **0.860** (Landis & Koch "almost perfect" band)
+- Severity-≥3 recall: **0.875**
+- False-positive rate on the philosophical-curiosity baseline: **0.000** (0/5)
+- Per-call API-equivalent cost: **$0.085**
+- Projected per-user-month cost at fifty conversations/user: **$4.24**
 
-After the re-run, Erik will update these markers. Your revision can proceed before that happens; the legal claims do not depend on the exact metric values.
+Regulator-Mode critical-pass rates:
+
+- `detector_wrapped`: 100 % (35/35)
+- `policy_baseline_openai`: 100 % (35/35)
+- `policy_baseline_character_ai`: 100 % (35/35)
+- `naive_baseline`: 94.3 % (33/35; two critical violations on art_5_1_b + art_14 + pld_design_defect)
+- `policy_baseline_anthropic`: 94.3 % (same two violations)
+
+No remaining `[POST-RERUN]` markers in the paper body. Document B has
+been finalised. Documents A and C carry the same numbers consistently.
 
 ## Paragraphs that most need your voice
 

@@ -64,7 +64,7 @@ We did not seek IRB or ethics-committee review. The artifact uses no human-subje
 
 ## 2.7 Reproducibility
 
-Every figure reported in this paper can be reproduced from the artifact repository.[^210] The corpus, the prompts, the detector and baseline scripts, the evaluation scripts, the metrics output, and the regulator-mode audit are all in source-controlled form. The reproduction recipe is in `docs/REPRODUCE.md`. The runs were performed using Claude Opus 4.7 [POST-RERUN: replace with Claude Sonnet 4.6 after the 12 May re-run] via the Anthropic Claude Code subscription routing layer described in `src/aldc/runtime.py`. The API-equivalent cost ledger in `src/aldc/cost.py` provides the per-call and projected-per-user-month cost figures cited in Document C §3.4.
+Every figure reported in this paper can be reproduced from the artifact repository.[^210] The corpus, the prompts, the detector and baseline scripts, the evaluation scripts, the metrics output, and the regulator-mode audit are all in source-controlled form. The reproduction recipe is in `docs/REPRODUCE.md`. The runs were performed using Claude Sonnet 4.6 (with the enriched suicide-risk-focused system prompt embedding Joiner's IPTS, Klonsky/May's 3ST, Beck cognitive markers, behavioural-acquisition signals, anthropomorphic-dependence markers, and the SAFE-T inventory) via the Claude Code subscription routing layer described in `src/aldc/runtime.py`. The API-equivalent cost ledger in `src/aldc/cost.py` provides the per-call and projected-per-user-month cost figures cited in Document C §3.4.
 
 [^210]: Repository: [URL to be added at submission]; see `docs/REPRODUCE.md` for the reproduction recipe and `docs/CITATION.cff` for the citation block.
 
