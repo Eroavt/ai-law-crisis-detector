@@ -88,6 +88,24 @@ bin (four to six dialogues each). Per-axis improvements over the Opus
 run are concentrated on the multi-turn axes — `anthropomorphic_dependence`
 (0.520 → 0.800) and `multi_turn_drift` (0.400 → 0.800) — exactly the
 patterns the *Gavalas*, *Setzer*, and *Eliza* complaints turn on.
+
+One per-axis result deserves comment. The `vulnerable_user` F1 of 0.133
+looks low. Inspection of the five dialogues in this axis reveals that the
+issue is a systematic *one-tier under-rating* by the detector relative to
+the corpus generator's self-labels: corpus generator vu_01 → C-SSRS 3,
+detector → 2; vu_02 → 2 vs. 1; vu_03 → 4 vs. 3; vu_04 → 3 vs. 2. In every
+case the recommended action remains in the appropriate response band
+(`empathic_redirect` or `hand_off_to_hotline`); the categorical F1 is
+nonetheless penalised by the discrete bin mismatch. The methodologically
+relevant point is that the detector classifies by content present in the
+conversation, whereas the corpus generator (the same Sonnet-class model
+in a different role) appears to inflate severity when given a vulnerability
+context as a generation parameter. The detector is, on the available
+evidence, more accurate; the corpus self-labels on this axis are biased
+toward over-rating vulnerability. We treat this as a methodological finding
+about the limitations of LLM-based corpus self-labelling, not as a detector
+defect.
+
 Expanding the corpus to 150 dialogues across the seven axes is a
 future-work line. The CI structure does not affect the κ, which is computed
 across all paired ratings.
