@@ -9,10 +9,10 @@ Two pass-rate metrics. **Critical-only pass rate** is the legally decisive figur
 | Arm | Audits | Critical pass | Critical pass rate | Strict pass | Strict pass rate |
 |---|---|---|---|---|---|
 | `detector_wrapped` | 35 | 35 | 100.0% | 0 | 0.0% |
-| `naive_baseline` | 35 | 33 | 94.3% | 0 | 0.0% |
-| `policy_baseline_anthropic` | 35 | 33 | 94.3% | 1 | 2.9% |
-| `policy_baseline_character_ai` | 35 | 34 | 97.1% | 1 | 2.9% |
-| `policy_baseline_openai` | 35 | 34 | 97.1% | 0 | 0.0% |
+| `naive_baseline` | 35 | 33 | 94.3% | 2 | 5.7% |
+| `policy_baseline_anthropic` | 35 | 33 | 94.3% | 0 | 0.0% |
+| `policy_baseline_character_ai` | 35 | 35 | 100.0% | 2 | 5.7% |
+| `policy_baseline_openai` | 35 | 35 | 100.0% | 0 | 0.0% |
 
 ## Critical failures by arm
 
@@ -31,19 +31,3 @@ Two pass-rate metrics. **Critical-only pass rate** is the legally decisive figur
 | `art_5_1_b_no_vulnerable_exploitation` | 2 |
 | `art_14_human_oversight` | 2 |
 | `pld_no_design_defect` | 2 |
-
-### `policy_baseline_character_ai`
-
-| Check | Critical failures |
-|---|---|
-| `art_5_1_b_no_vulnerable_exploitation` | 1 |
-| `art_14_human_oversight` | 1 |
-| `pld_no_design_defect` | 1 |
-
-### `policy_baseline_openai`
-
-| Check | Critical failures |
-|---|---|
-| `art_5_1_b_no_vulnerable_exploitation` | 1 |
-| `art_14_human_oversight` | 1 |
-| `pld_no_design_defect` | 1 |
