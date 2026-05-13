@@ -35,3 +35,11 @@ Thumbs.db
 
 # Claude Code internal
 .claude/
+
+# Copyrighted commentary PDFs (LexCampus / swisslex exports)
+# Downloaded locally for citation verification; not redistributable
+paper/sources/*.pdf
+paper/sources/_extracted/
+
+# R session history (occasionally written by hand)
+.Rhistory
