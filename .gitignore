@@ -36,10 +36,14 @@ Thumbs.db
 # Claude Code internal
 .claude/
 
-# Copyrighted commentary PDFs (LexCampus / swisslex exports)
-# Downloaded locally for citation verification; not redistributable
-paper/sources/*.pdf
-paper/sources/_extracted/
+# Paper drafts are kept private until publication; the GitHub repo
+# carries only the research artifact (code + corpus + results + docs).
+# Authors work on paper/ locally; nothing in paper/ is pushed.
+paper/
+
+# Paper-build pipeline (kept local; the artifact code stays in scripts/)
+scripts/build_paper_final.py
+scripts/build_submission_docx.py
 
 # R session history (occasionally written by hand)
 .Rhistory

@@ -6,7 +6,7 @@
 
 Research artifact accompanying the paper **"Duty, Defect, and Disclosure: Reassessing Developer Liability for LLM Chatbots in Suicidal Crises under Swiss and European Law"** (UZH FS26 *AI: Technology and Law*, Profs. Florent Thouvenin and Abraham Bernstein, May 2026).
 
-**Quick start:** `make demo` (workshop demo) · **Full walkthrough:** [`HOW_TO_DEMO.md`](HOW_TO_DEMO.md) · **The paper:** [`paper/submission.pdf`](paper/submission.pdf)
+**Quick start:** `make demo` (workshop demo) · **Full walkthrough:** [`HOW_TO_DEMO.md`](HOW_TO_DEMO.md) · **The paper:** to be published separately
 
 ## What this is
 
@@ -54,7 +54,7 @@ Each conversation × arm  ──►  Regulator-Mode audit
 - `src/aldc/baselines.py` — 5-arm contrast.
 - `src/aldc/safe_response.py` — graduated 4-tier safe-response module with Swiss + international hotlines (143 Dargebotene Hand, 147 Pro Juventute, 144 medical, 112 EU emergency, 988 US Lifeline, Samaritans 116 123, Telefonseelsorge 0800 111 0 111).
 - `src/aldc/regulator_view.py` — AI Act / GDPR / PLD conformity audit.
-- `src/aldc/adversarial.py` — multi-turn guardrail-decay probe with user-simulator. Attempted on 12 May 2026 and not run to completion: current frontier user-simulator LLMs reliably refuse to roleplay distress escalation, which is a methodological finding in its own right and is documented in `paper/document_b.md` §B.5. Figure 2 in the paper draws from existing regulator-audit data instead.
+- `src/aldc/adversarial.py` — multi-turn guardrail-decay probe with user-simulator. Attempted on 12 May 2026 and not run to completion: current frontier user-simulator LLMs reliably refuse to roleplay distress escalation, which is a methodological finding in its own right. The substitute exhibit (severity-stratified critical-failure rate; see `results/figure2_severity_failure.png`) draws on existing regulator-audit data instead.
 - `src/aldc/live_providers.py` — optional live ChatGPT-4o / Gemini-2.5 scorecard arm (requires OpenAI / Google API keys).
 - `src/aldc/eval.py` — F1, Cohen's κ, per-axis / per-severity / per-language F1, bootstrap 95% CIs, per-arm failure rates.
 - `src/aldc/cost.py` — cost ledger feeding the paper's *Wirtschaftliche Zumutbarkeit* (economic-reasonableness) analysis.
@@ -65,7 +65,6 @@ Each conversation × arm  ──►  Regulator-Mode audit
 - `data/hotlines.yaml` — locale-specific hotline directory used by `safe_response.py`.
 - `results/` — paper exhibits B–H (detections, baselines, metrics, regulator audits, evaluation report).
 - `docs/` — ETHICS, REPRODUCE, DATASHEET, MODEL_CARD, ARTIFACT_TO_PAPER, COUNTERARGUMENTS, PAPER_OUTLINE.
-- `paper/` — Markdown drafts of all three submission documents plus REVISION_NOTES_FOR_ATHIRA.
 - `scripts/` — numbered CLI entry points (01 corpus, 02 detection, 03 baselines, 04 live providers, 05 adversarial, 08 evaluate, 09 regulator audits, 99 freeze for submission).
 
 ## Headline metrics (12 May 2026 Sonnet 4.6 evaluation)
@@ -109,7 +108,7 @@ uv run pytest
 make demo
 ```
 
-Runs the preflight (corpus / detections / baselines / legal-map sanity) and then launches the Streamlit app at `http://localhost:8501`. The intended demo path is on **Slide 6** of `paper/SLIDE_DECK_OUTLINE.md`: pick `kst_01` (Raine pattern) from the dropdown, walk through the six side-by-side panels (Ground truth / Naive / Policy-only / Detector-wrapped / Live detector / Legal mapping), then switch to the **Regulator Mode** tab and pick `naive_baseline` to surface the critical red flags (`art_5_1_b_no_vulnerable_exploitation`, `art_14_human_oversight`, `pld_no_design_defect`). Other useful conversations: `ad_01` (Setzer pattern), `mtd_03` (Eliza pattern, severity 5), `fp_01` (philosophical-curiosity control, must NOT flag), `pvi_02` (privacy-vs-intervention edge case).
+Runs the preflight (corpus / detections / baselines / legal-map sanity) and then launches the Streamlit app at `http://localhost:8501`. The demo path: pick `kst_01` (Raine pattern) from the dropdown, walk through the six side-by-side panels (Ground truth / Naive / Policy-only / Detector-wrapped / Live detector / Legal mapping), then switch to the **Regulator Mode** tab and pick `naive_baseline` to surface the critical red flags (`art_5_1_b_no_vulnerable_exploitation`, `art_14_human_oversight`, `pld_no_design_defect`). Other useful conversations: `ad_01` (Setzer pattern), `mtd_03` (Eliza pattern, severity 5), `fp_01` (philosophical-curiosity control, must NOT flag), `pvi_02` (privacy-vs-intervention edge case). The full walkthrough is in [`HOW_TO_DEMO.md`](HOW_TO_DEMO.md).
 
 Other one-liners: `make test` (paper-anchor + schema + legal-map suites), `make figure2` (rebuild the severity-stratified failure chart), `make paper` (rebuild PAPER_FINAL_DRAFT.md), `make preflight` (the three together). Run `make help` for the full list.
 

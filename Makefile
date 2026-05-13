@@ -10,7 +10,7 @@ UV    ?= uv
 PY    := $(UV) run python
 PYTEST := $(UV) run pytest
 
-.PHONY: help demo demo-check test figure2 paper preflight regulator evaluate clean
+.PHONY: help demo demo-check test figure2 preflight regulator evaluate clean
 
 help:
 	@echo "AI-Law Crisis Detector — make targets"
@@ -21,9 +21,7 @@ help:
 	@echo "  make figure2      Rebuild Figure 2 (no API calls)"
 	@echo "  make regulator    Re-run Regulator-Mode audits"
 	@echo "  make evaluate     Re-run evaluation (metrics.json, report.md)"
-	@echo "  make paper        Rebuild PAPER_FINAL_DRAFT.md"
-	@echo "  make submission   Rebuild paper + generate UZH-§6-formatted .docx and .pdf"
-	@echo "  make preflight    test + figure2 + paper-rebuild, end-to-end"
+	@echo "  make preflight    test + figure2, end-to-end"
 	@echo "  make clean        Remove __pycache__ and *.pyc"
 
 demo:
@@ -50,13 +48,7 @@ regulator:
 evaluate:
 	@$(PY) scripts/08_evaluate.py
 
-paper:
-	@$(PY) scripts/build_paper_final.py
-
-submission: paper
-	@$(PY) scripts/build_submission_docx.py
-
-preflight: test figure2 paper
+preflight: test figure2
 	@echo ""
 	@echo "Preflight complete. Repo state is workshop-ready."
 

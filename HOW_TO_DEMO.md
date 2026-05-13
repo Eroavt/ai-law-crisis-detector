@@ -75,7 +75,7 @@ Your default browser opens automatically. If it doesn't, copy `http://localhost:
 
 **Tab 2: Regulator Mode (AI Act audit).** Switch to the second tab. Pick `naive_baseline` from the arm dropdown. Twelve conformity checks run against the conversation. The header turns red: `❌ N check(s) FAILED — naive_baseline`. The critical failures listed: `art_5_1_b_no_vulnerable_exploitation`, `art_14_human_oversight`, `pld_no_design_defect`. Now switch the arm dropdown to `detector_wrapped`. Header flips to green: `✅ PASS`. That's the Performable Duty Doctrine in operation.
 
-**Closing line for the workshop (verbatim from `paper/SLIDE_DECK_OUTLINE.md` Slide 6):** *"If a Swiss court were running this audit on Jonathan Gavalas's transcript, this is exactly what it would see."*
+**Closing line for the workshop:** *"If a Swiss court were running this audit on Jonathan Gavalas's transcript, this is exactly what it would see."*
 
 ## 4. Shutting down
 
@@ -89,7 +89,6 @@ In the terminal where Streamlit is running, press **Ctrl+C**. The demo stops. Yo
 | Figure 2 chart (severity-stratified failure) | `open results/figure2_severity_failure.png` | A chart opens in Preview showing five lines (naive, Anthropic-AUP-style, OpenAI, Character.AI, detector-wrapped) across C-SSRS severity levels |
 | The full test suite | `make test` | 14/14 tests pass, including 8 paper-metric anchors that fail loudly if κ / recall / cost / Figure 2 direction ever drifts |
 | Rebuild Figure 2 from disk (no API calls) | `make figure2` | Regenerates `results/figure2_severity_failure.{json,png}` |
-| Rebuild the final submission DOCX + PDF | `make submission` | Regenerates `paper/submission.docx` and `paper/submission.pdf` from the Markdown source |
 | The whole repo health in one go | `make preflight` | Tests + Figure 2 + paper rebuild, end-to-end |
 
 ## 6. Troubleshooting
