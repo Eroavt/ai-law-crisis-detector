@@ -1,4 +1,4 @@
-# List of Technical Tools — UZH §4.5 disclosure
+# List of Technical Tools: UZH §4.5 disclosure
 
 In accordance with the Faculty of Law's *Guidelines for Academic Essays* §4.5, we
 disclose the technical tools used in the preparation of this paper and the
@@ -17,7 +17,7 @@ choices, and the JSONL outputs are checked into the repository at
 methodological subject of Document C §2, not an undisclosed editorial aid.
 
 **GitHub Copilot and Anthropic Claude (assistant context).** Used in the
-software-engineering portion of the artifact — code architecture review, bug
+software-engineering portion of the artifact, code architecture review, bug
 fixes, refactoring suggestions, and integration-test scaffolding for the
 detector pipeline (`src/aldc/runtime.py`, `src/aldc/eval.py`, the Streamlit
 demo). The artifact's working logic, the prompt designs, the corpus

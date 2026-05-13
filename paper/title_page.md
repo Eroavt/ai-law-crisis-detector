@@ -1,4 +1,4 @@
-# Title page — UZH Faculty of Law §4.1 template
+# Title page: UZH Faculty of Law §4.1 template
 
 > **Layout note for Athira / Erik:** translate this Markdown into the §4.1
 > formatted title page in Word. Title centred upper-third; course information

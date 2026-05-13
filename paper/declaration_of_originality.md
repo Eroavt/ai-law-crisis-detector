@@ -1,4 +1,4 @@
-# Declaration of Originality — UZH §7 template
+# Declaration of Originality: UZH §7 template
 
 Athira Ashokan, Erik Avtandilyan, Nishant Kumar Singh
 
