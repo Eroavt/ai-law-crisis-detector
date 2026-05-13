@@ -32,6 +32,8 @@ SRC = REPO_ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+DETECTOR_PROMPT_PATH = SRC / "aldc" / "prompts" / "detector_system.txt"
+
 from dotenv import load_dotenv
 
 from aldc import legal_map, regulator_view
@@ -101,6 +103,63 @@ st.markdown(
     "this empirical fact turns the failure to deploy crisis detection into "
     "a foreseeable breach of the Swiss developer duty of care."
 )
+
+# --- Architecture: what is actually ours vs. a vendor model ----------------
+
+with st.container(border=True):
+    st.markdown("**How the detector is built.**  Sonnet 4.6 is the inference "
+                "substrate inside stage ①. Stages ②–④ contain no LLM at run "
+                "time. The clinical prompt, the JSON schema, the response "
+                "bank, the audit rules, and the legal-mapping ontology are "
+                "the artifact's contribution.")
+    st.graphviz_chart(
+        """
+        digraph pipeline {
+            rankdir=TB;
+            bgcolor="transparent";
+            node [shape=box, style="rounded,filled", fontname="Helvetica",
+                  fontsize=11, margin=0.15];
+            edge [fontname="Helvetica", fontsize=9, color="#666666"];
+
+            convo [label="User conversation\\n(35-conversation\\nstratified corpus)",
+                   fillcolor="#eceff1", color="#90a4ae"];
+
+            detect [label="① Our calibrated detector\\n• 82-line clinical prompt\\n   (C-SSRS + ASQ + 6 risk frameworks)\\n• JSON-schema-forced output\\n• Run TWICE; κ = 0.860 inter-rater\\n\\n[Sonnet 4.6 = inference substrate]",
+                    fillcolor="#e3f2fd", color="#1976d2"];
+
+            response [label="② Our safe-response bank\\nNo LLM at runtime\\nFixed 4-tier text, localised hotlines\\n(acknowledge → empathic_redirect →\\nhand_off_to_hotline → emergency)",
+                      fillcolor="#e8f5e9", color="#2e7d32"];
+
+            audit [label="③ Our regulator audit\\nNo LLM\\n12 rule-based checks against\\nAI Act / GDPR / PLD /\\nStGB 115 / revDSG 31",
+                   fillcolor="#f3e5f5", color="#6a1b9a"];
+
+            legalmap [label="④ Our legal-mapping ontology\\nHand-curated\\n7 axes → primary article + case +\\ndoctrinal claim + paper section",
+                      fillcolor="#fff3e0", color="#e65100"];
+
+            verdict [label="Pass / Fail verdict\\n+ legal citations",
+                     fillcolor="#eceff1", color="#90a4ae"];
+
+            convo    -> detect   [label="raw turns"];
+            detect   -> response [label="severity 0-5 + action"];
+            detect   -> legalmap [label="legal_axis_tag", style=dashed];
+            response -> audit    [label="response text"];
+            legalmap -> audit    [label="article set", style=dashed];
+            audit    -> verdict;
+        }
+        """
+    )
+    with st.expander("Show the 82-line clinical prompt that turns Sonnet into a calibrated rater"):
+        st.markdown(
+            "This is the system prompt sent to Sonnet 4.6 on every detection "
+            "call. Its construction (instruments, frameworks, do-not-overflag "
+            "rules, structured-output discipline) is the artifact's "
+            "contribution; Sonnet only provides the inference."
+        )
+        try:
+            prompt_text = DETECTOR_PROMPT_PATH.read_text(encoding="utf-8")
+            st.code(prompt_text, language="text")
+        except OSError as exc:
+            st.error(f"Could not load detector prompt: {exc}")
 
 st.divider()
 
