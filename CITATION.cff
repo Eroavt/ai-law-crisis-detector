@@ -12,8 +12,17 @@ authors:
   - family-names: Singh
     given-names: Nishant Kumar
     affiliation: University of Zurich
-repository-code: "https://github.com/<TBD>/ai-law-crisis-detector"
+repository-code: "https://github.com/Eroavt/ai-law-crisis-detector"
 license: MIT
+version: "0.1.0"
+date-released: 2026-05-15
+keywords:
+  - ai-safety
+  - suicide-prevention
+  - swiss-law
+  - eu-ai-act
+  - product-liability
+  - performable-duty-doctrine
 preferred-citation:
   type: article
   title: "Duty, Defect, and Disclosure: Reassessing Developer Liability for LLM Chatbots in Suicidal Crises under the EU and Swiss Law"

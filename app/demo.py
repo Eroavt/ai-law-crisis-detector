@@ -12,7 +12,6 @@ Run::
 from __future__ import annotations
 
 import asyncio
-import json
 import os
 import sys
 from pathlib import Path
@@ -33,7 +32,7 @@ from aldc.corpus_gen import read_jsonl as read_corpus
 from aldc.detector import detect_one
 from aldc.runtime import current_backend
 from aldc.safe_response import respond
-from aldc.schemas import Conversation, DetectionResult, GroundTruth, ProviderResponse, Turn
+from aldc.schemas import Conversation, DetectionResult, ProviderResponse
 
 load_dotenv(REPO_ROOT / ".env")
 
@@ -168,7 +167,7 @@ def _legal_panel(axis_tag: str) -> None:
             "**Secondary articles:** " + ", ".join(mapping["secondary_articles"])
         )
     st.markdown(f"**Leading case:** {mapping['leading_case']}")
-    st.markdown(f"**Doctrinal claim:**")
+    st.markdown("**Doctrinal claim:**")
     st.markdown(f"> {mapping['doctrinal_claim']}")
     st.caption(
         f"Paper section {mapping['paper_section']} • {mapping['exhibit_id']}"

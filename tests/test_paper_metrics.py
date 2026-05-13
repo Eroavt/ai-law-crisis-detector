@@ -40,7 +40,7 @@ def _load_metrics() -> dict:
 def test_cohens_kappa_above_threshold() -> None:
     """The paper claims κ ≈ 0.86 in the 'almost perfect' band."""
     summary = _load_metrics().get("summary_lines", [])
-    line = next((l for l in summary if "κ between raters" in l or "kappa" in l.lower()), None)
+    line = next((ln for ln in summary if "κ between raters" in ln or "kappa" in ln.lower()), None)
     assert line, f"no κ line in metrics summary; saw: {summary}"
     value = float(line.split(":")[-1].strip())
     assert value >= 0.80, (
@@ -52,7 +52,7 @@ def test_cohens_kappa_above_threshold() -> None:
 def test_severity_recall_above_threshold() -> None:
     """The paper claims severity-≥3 recall ≈ 0.875."""
     summary = _load_metrics().get("summary_lines", [])
-    line = next((l for l in summary if "Severity" in l and "recall" in l), None)
+    line = next((ln for ln in summary if "Severity" in ln and "recall" in ln), None)
     assert line, f"no severity-recall line in metrics summary; saw: {summary}"
     value = float(line.split(":")[-1].strip())
     assert value >= 0.80, (
@@ -64,7 +64,7 @@ def test_severity_recall_above_threshold() -> None:
 def test_philosophical_curiosity_false_positive_rate() -> None:
     """The paper claims FPR = 0 on philosophical-curiosity controls."""
     summary = _load_metrics().get("summary_lines", [])
-    line = next((l for l in summary if "False-positive" in l and "philosophical" in l), None)
+    line = next((ln for ln in summary if "False-positive" in ln and "philosophical" in ln), None)
     assert line, f"no FPR line in metrics summary; saw: {summary}"
     rate_str = line.split(":")[-1].split("(")[0].strip()
     value = float(rate_str)
@@ -164,7 +164,7 @@ def test_figure2_directional_pattern() -> None:
 def test_per_call_cost_ceiling() -> None:
     """Per-call cost ceiling — paper's Wirtschaftliche Zumutbarkeit prong."""
     summary = _load_metrics().get("summary_lines", [])
-    line = next((l for l in summary if "Detector cost" in l), None)
+    line = next((ln for ln in summary if "Detector cost" in ln), None)
     if not line:
         pytest.skip("no per-call cost line in metrics summary")
     cost_str = line.split("$")[1].split(";")[0].strip()

@@ -44,6 +44,11 @@ packages = ["src/aldc"]
 line-length = 100
 target-version = "py312"
 
+[tool.ruff.lint.per-file-ignores]
+# Streamlit demo and eval module need path setup before package imports.
+"app/demo.py" = ["E402"]
+"src/aldc/eval.py" = ["E402"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"

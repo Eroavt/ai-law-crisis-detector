@@ -62,7 +62,7 @@ def _brief_for(convo, detection, naive_resp, det_wrapped_resp) -> str:
         )
         out.append(f"- Dynamics score: {detection.dynamics_score:.2f}")
         out.append(
-            f"- Linguistic markers: "
+            "- Linguistic markers: "
             + ", ".join(f"\"{m}\"" for m in detection.linguistic_markers)
         )
         out.append("- Reasoning trace:")
@@ -92,7 +92,7 @@ def _brief_for(convo, detection, naive_resp, det_wrapped_resp) -> str:
             )
         out.append(f"- **Leading case:** {mapping['leading_case']}")
         out.append(f"- **Paper section:** {mapping['paper_section']}")
-        out.append(f"- **Doctrinal claim:**")
+        out.append("- **Doctrinal claim:**")
         out.append(f"  > {mapping['doctrinal_claim']}")
         out.append("")
     except KeyError:

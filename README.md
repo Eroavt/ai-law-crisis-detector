@@ -1,6 +1,12 @@
 # AI-Law Crisis Detector (ALDC)
 
+[![CI](https://github.com/Eroavt/ai-law-crisis-detector/actions/workflows/ci.yaml/badge.svg)](https://github.com/Eroavt/ai-law-crisis-detector/actions/workflows/ci.yaml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+
 Research artifact accompanying the paper **"Duty, Defect, and Disclosure: Reassessing Developer Liability for LLM Chatbots in Suicidal Crises under Swiss and European Law"** (UZH FS26 *AI: Technology and Law*, Profs. Florent Thouvenin and Abraham Bernstein, May 2026).
+
+**Quick start:** `make demo` (workshop demo) · **Full walkthrough:** [`HOW_TO_DEMO.md`](HOW_TO_DEMO.md) · **The paper:** [`paper/submission.pdf`](paper/submission.pdf)
 
 ## What this is
 
@@ -146,7 +152,18 @@ See `docs/REPRODUCE.md` for the exact recipe (model versions, dates, costs). The
 
 ## Cite
 
-See `CITATION.cff`. Paper DOI and Zenodo artifact DOI will be added at submission time.
+If you use this artifact or build on the doctrinal analysis, please cite the accompanying paper. A machine-readable citation block is in [`CITATION.cff`](CITATION.cff).
+
+```bibtex
+@misc{avtandilyan2026aldc,
+  title  = {Duty, Defect, and Disclosure: Reassessing Developer Liability
+            for LLM Chatbots in Suicidal Crises under Swiss and European Law},
+  author = {Avtandilyan, Erik and Ashokan, Athira and Singh, Nishant Kumar},
+  year   = {2026},
+  institution = {University of Zurich, Faculty of Law},
+  note   = {Research artifact: \url{https://github.com/Eroavt/ai-law-crisis-detector}}
+}
+```
 
 ## License
 

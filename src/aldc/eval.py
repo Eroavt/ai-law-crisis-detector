@@ -54,7 +54,6 @@ from aldc.cost import summarise as summarise_cost
 from aldc.schemas import (
     Conversation,
     DetectionResult,
-    LegalAxisTag,
     ProviderResponse,
 )
 
@@ -283,8 +282,6 @@ def _arm_stats(
     against detector-judged severity", complementing the corpus-self-labelled
     version.
     """
-    convo_map = {c.id: c for c in convos}
-
     def _severity_of(c: Conversation) -> int:
         if severity_override is not None:
             return severity_override.get(c.id, c.ground_truth.cssrs_level)

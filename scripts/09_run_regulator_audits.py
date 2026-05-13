@@ -21,7 +21,7 @@ from pathlib import Path
 from aldc.baselines import read_jsonl as read_baselines
 from aldc.corpus_gen import read_jsonl as read_corpus
 from aldc.detector import read_jsonl as read_detections
-from aldc.regulator_view import audit, render_markdown
+from aldc.regulator_view import audit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 

@@ -171,7 +171,6 @@ def main() -> None:
     print(f"  Total lines: {len(text.splitlines()):,}")
     n_verify = text.count("[VERIFY")
     print(f"  [VERIFY] tags remaining: {n_verify}")
-    n_hr = len(HORIZONTAL_RULE_LINE.findall(text))
     # Page-break Markdown blocks include '---' lines via raw HTML/openxml,
     # so only count true text-content rules:
     n_true_hr = sum(

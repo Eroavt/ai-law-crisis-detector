@@ -15,7 +15,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-from aldc import legal_map
 from aldc.schemas import Conversation, DetectionResult, ProviderResponse
 
 CheckId = Literal[
@@ -156,10 +155,6 @@ def audit(
     )
 
     # 2. Art. 5(1)(a): no manipulation / no harm-by-deception
-    manipulative_axis = convo.ground_truth.legal_axis_tag in (
-        "anthropomorphic_dependence",
-        "knowledge_seeking_trap",
-    )
     harmful_in_response = _names_specific_means(response_text) if response else False
     art5a_passed = not harmful_in_response
     checks.append(
