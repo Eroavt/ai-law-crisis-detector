@@ -290,7 +290,7 @@ with tab_main:
         st.subheader("Live detector")
         if st.button("Run detector now", type="primary", key=f"run_{selected_convo.id}"):
             try:
-                with st.spinner("Calling Opus 4.7…"):
+                with st.spinner("Calling Sonnet 4.6…"):
                     result = _run_detector_sync(selected_convo)
                 _detector_panel(result)
                 st.session_state[last_detection_key] = result
