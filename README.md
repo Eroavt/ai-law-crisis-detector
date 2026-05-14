@@ -4,23 +4,19 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 
-Research artifact accompanying the paper **"Duty, Defect, and Disclosure: Reassessing Developer Liability for LLM Chatbots in Suicidal Crises under Swiss and European Law"** (UZH FS26 *AI: Technology and Law*, Profs. Florent Thouvenin and Abraham Bernstein, May 2026).
+Research artifact accompanying the paper **"Duty, Defect, and Disclosure: Reassessing Developer Liability for LLM Chatbots in Suicidal Crises under Swiss and European Law"** (UZH FS26 *AI: Technology and Law*, Profs. Abraham Bernstein and Florent Thouvenin).
 
-**Quick start:** `make demo` (workshop demo) · **Full walkthrough:** [`HOW_TO_DEMO.md`](HOW_TO_DEMO.md) · **The paper:** to be published separately
+**Quick start:** `make demo` (workshop demo) · **Full walkthrough:** [`HOW_TO_DEMO.md`](HOW_TO_DEMO.md)·
 
 ## What this is
 
 ALDC is a clinically-grounded, calibrated detection pipeline that classifies a chat conversation against the Columbia Suicide Severity Rating Scale (C-SSRS) and the NIMH Ask Suicide-Screening Questions (ASQ). The detector embeds six predictive frameworks (Joiner's IPTS, Klonsky/May's 3ST, Beck cognitive markers, behavioural acquisition signals, AI-chat anthropomorphic-dependence markers, the SAFE-T risk inventory) and emits a structured `DetectionResult` linking each case to a specific Swiss or EU legal article via `src/aldc/legal_map.py`. It is calibrated for suicide-risk *flagging*, not psychiatric diagnosis.
 
-The artifact is the technical premise of the paper's central legal claim:
-
-> **The foreseeability gap has closed.** Crisis detection in conversational AI is technically performable with off-the-shelf models at marginal cost. Failure to deploy is no longer a research limitation; it is a foreseeable, defective design choice for which developers are liable in damages and, in egregious cases, regulatorily sanctionable.
-
 ## What this is not
 
-Not a clinical tool. Not deployable as-is in production without proper safety review, locale-appropriate hotlines, and human-on-the-loop oversight. Synthetic data is for *evaluation*, not training.
+Not a clinical tool. Not deployable as-is in production without proper safety review, locale-appropriate hotlines, and human-on-the-loop oversight. Synthetic data generated is for *evaluation*, not training.
 
-## Pipeline at a glance
+## Pipeline
 
 ```
 Conversation ──► Detector (Sonnet 4.6, two raters at T = 0.0 and T = 0.3)
@@ -102,13 +98,13 @@ cp .env.example .env
 uv run pytest
 ```
 
-### How the demo uses credentials (security note)
+### NOTE: How the demo (project) uses credentials for running
 
 The artifact is a **local-execution** research tool. Nothing in this repo phones home to an account owned by the authors. When you clone and run the demo, here is what happens:
 
 - **`make demo` runs entirely on your machine.** The Streamlit app at `http://localhost:8501` is served locally; the repo does not deploy any hosted endpoint.
 - **The default `claude_code` backend** spawns a `claude -p` subprocess on *your* machine and uses *your* Claude Code login (your Max subscription). The authors' subscription is never touched.
-- **The `api` backend** (alternative, `ALDC_BACKEND=api`) reads `ANTHROPIC_API_KEY` from your local `.env` — which you fill in yourself, never committed.
+- **The `api` backend** (alternative, `ALDC_BACKEND=api`) reads `ANTHROPIC_API_KEY` from your local `.env` which you fill in yourself, never committed.
 - **No credentials are committed.** `.env` is gitignored; `.env.example` shows only placeholder variable names (`sk-ant-...`).
 - **You can use most of the demo without any credentials at all.** The side-by-side comparison panel and the Regulator-Mode AI Act conformity audit read pre-computed `results/*.jsonl` files on disk and need no live API call. Only the *Live detector* panel inside the demo issues a new call, and that call uses your own credentials.
 
@@ -178,4 +174,4 @@ If you use this artifact or build on the doctrinal analysis, please cite the acc
 
 ## License
 
-MIT. Authors: Athira Ashokan, Erik Avtandilyan, Nishant Kumar Singh. University of Zurich, Faculty of Law, FS26.
+MIT. Authors: Erik Avtandilyan, Nishant Kumar Singh, Athira Ashokan.
