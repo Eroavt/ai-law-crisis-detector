@@ -33,7 +33,7 @@ Conversation ──► 5-arm baselines:
                      • detector_wrapped                (detector + templated safe response)
 
 Each conversation × arm  ──►  Regulator-Mode audit
-                              10 AI Act / GDPR / PLD conformity checks
+                              12 AI Act / PLD / GDPR / Swiss-law conformity checks
                               critical-pass / strict-pass rates per arm
 ```
 
@@ -54,7 +54,8 @@ Each conversation × arm  ──►  Regulator-Mode audit
 - `src/aldc/live_providers.py` — optional live ChatGPT-4o / Gemini-2.5 scorecard arm (requires OpenAI / Google API keys).
 - `src/aldc/eval.py` — F1, Cohen's κ, per-axis / per-severity / per-language F1, bootstrap 95% CIs, per-arm failure rates.
 - `src/aldc/cost.py` — cost ledger feeding the paper's *Wirtschaftliche Zumutbarkeit* (economic-reasonableness) analysis.
-- `app/demo.py` — Streamlit demo with six panels (Ground Truth / Naive / Policy / Detector-Wrapped / Live Detector / Legal Mapping) plus a Regulator Mode tab.
+- `app/demo.py` — Streamlit demo. Editorial light-mode layout with a persistent transcript and four tabs: **Comparison** (five-arm contrast on the same conversation), **Audit** (twelve-check Regulator-Mode audit with arm dropdown), **Doctrine** (axis → article → case mapping, Figure 2, drafted Art. 3 *bis* PrHG), and **Live chat** (multi-turn chat with Sonnet 4.6 plus on-demand classification of the live transcript).
+- `.streamlit/config.toml` — locks the demo to light mode and a minimal toolbar, so the app looks the same on every reviewer's laptop regardless of their OS dark-mode preference.
 - `data/corpus.jsonl` — 35-dialogue stratified evaluation corpus (paper Exhibit A).
 - `data/exhibit_curated.jsonl` — four hand-curated worked examples incorporating verbatim publicly-pleaded text from *Gavalas v. Google*, *Garcia v. Character Technologies*, and *Raine v. OpenAI*.
 - `data/corpus_seed.yaml` — generation recipe (MVP English + DE/FR/IT multilingual subset).
@@ -106,9 +107,9 @@ The artifact is a **local-execution** research tool. Nothing in this repo phones
 - **The default `claude_code` backend** spawns a `claude -p` subprocess on *your* machine and uses *your* Claude Code login (your Max subscription). The authors' subscription is never touched.
 - **The `api` backend** (alternative, `ALDC_BACKEND=api`) reads `ANTHROPIC_API_KEY` from your local `.env` which you fill in yourself, never committed.
 - **No credentials are committed.** `.env` is gitignored; `.env.example` shows only placeholder variable names (`sk-ant-...`).
-- **You can use most of the demo without any credentials at all.** The side-by-side comparison panel and the Regulator-Mode AI Act conformity audit read pre-computed `results/*.jsonl` files on disk and need no live API call. Only the *Live detector* panel inside the demo issues a new call, and that call uses your own credentials.
+- **You can use most of the demo without any credentials at all.** The Comparison, Audit and Doctrine tabs read pre-computed `results/*.jsonl` files on disk and need no live API call. Only the *Live chat* tab (and the optional "Run detector live" button on the Comparison tab) issue new calls, and those calls use your own Claude Code login / `ANTHROPIC_API_KEY`.
 
-If you want to evaluate the artifact and you don't have Claude Code installed, the comparison tab and the Regulator Mode tab are sufficient to see the central empirical claim (the failure-to-pass pattern across the five baseline arms). The *Live detector* panel is an optional add-on for users who want to classify their own conversation.
+If you want to evaluate the artifact and you don't have Claude Code installed, the Comparison, Audit and Doctrine tabs are sufficient to see the central empirical claim — the failure-to-pass pattern across the five baseline arms, the twelve-check Regulator-Mode audit, the axis → article → case mapping, and Figure 2. The *Live chat* tab is an optional add-on for users who want to talk to Sonnet 4.6 and then classify the live transcript.
 
 ## Workshop demo (one command)
 
@@ -116,9 +117,17 @@ If you want to evaluate the artifact and you don't have Claude Code installed, t
 make demo
 ```
 
-Runs the preflight (corpus / detections / baselines / legal-map sanity) and then launches the Streamlit app at `http://localhost:8501`. The demo path: pick `kst_01` (Raine pattern) from the dropdown, walk through the six side-by-side panels (Ground truth / Naive / Policy-only / Detector-wrapped / Live detector / Legal mapping), then switch to the **Regulator Mode** tab and pick `naive_baseline` to surface the critical red flags (`art_5_1_b_no_vulnerable_exploitation`, `art_14_human_oversight`, `pld_no_design_defect`). Other useful conversations: `ad_01` (Setzer pattern), `mtd_03` (Eliza pattern, severity 5), `fp_01` (philosophical-curiosity control, must NOT flag), `pvi_02` (privacy-vs-intervention edge case). The full walkthrough is in [`HOW_TO_DEMO.md`](HOW_TO_DEMO.md).
+Runs the preflight (corpus / detections / baselines / legal-map sanity) and then launches the Streamlit app at `http://localhost:8501`. The demo path:
 
-Other one-liners: `make test` (paper-anchor + schema + legal-map suites), `make figure2` (rebuild the severity-stratified failure chart), `make paper` (rebuild PAPER_FINAL_DRAFT.md), `make preflight` (the three together). Run `make help` for the full list.
+1. The header strip names the project; the conversation picker is right below it. The transcript is rendered inline, always visible.
+2. **Comparison tab** — the five baseline arms appear side by side. The detector-wrapped tile is highlighted with a charcoal left rule; the four others (Naïve, OpenAI policy, Anthropic policy, Character.AI policy) are peer tiles. Each tile has three computed verdict chips (crisis-resource mention / no specific means / AI-disclosure) and the detector-wrapped tile also shows the four-tier action ladder.
+3. **Audit tab** — pick `naive_baseline` from the arm dropdown on an audit-failing conversation (e.g. `pvi_04`). The banner turns red with three critical fails (`art_5_1_b_no_vulnerable_exploitation`, `art_14_human_oversight`, `pld_no_design_defect`). Switch the arm to `detector_wrapped`: the banner flips to green. The Gavalas v. Google ¶ 107 anchor is pinned at the bottom.
+4. **Doctrine tab** — the axis → primary article → secondary articles → leading case chain plus the one-sentence doctrinal claim. Figure 2 renders inline. The drafted Art. 3 *bis* PrHG appears in a monospace block. A "Methodology, limitations, ethics" expander holds the Appendix A.7–A.8 honest-limitations notes.
+5. **Live chat tab** — multi-turn chat with Sonnet 4.6 through the same `runtime.call_text` the rest of the artifact uses. After at least one exchange, click *Classify this conversation* to run the calibrated detector on the live transcript. Labelled "not part of the corpus evaluation" so reviewers don't conflate it with the κ / recall / failure-rate numbers in Appendix A.
+
+Useful corpus picks: `kst_01` (Raine pattern), `ad_01` (Setzer pattern, minor), `mtd_03` (Eliza pattern, severity 5), `pvi_04` (naïve AND Anthropic-policy fail audit), `pvi_02` (naïve fails audit), `kst_04` (Anthropic-policy fails audit), `fp_01` (philosophical-curiosity control, must NOT flag). The full walkthrough is in [`HOW_TO_DEMO.md`](HOW_TO_DEMO.md).
+
+Other one-liners: `make test` (paper-anchor + schema + legal-map suites), `make figure2` (rebuild the severity-stratified failure chart), `make preflight` (`test` + `figure2`, end-to-end). Run `make help` for the full list.
 
 ## Run the pipeline
 

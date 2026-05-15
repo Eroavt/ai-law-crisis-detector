@@ -30,8 +30,9 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Streamlit cache
+# Streamlit cache and secrets (the public-safe .streamlit/config.toml IS tracked)
 .streamlit/cache/
+.streamlit/secrets.toml
 
 # Claude Code internal
 .claude/
